@@ -16,15 +16,15 @@
       --cols: 2;
       --rows: 5;
       /* Front Lime Center Coordinates (% of card width & height)
-         Bottle 1 (Leftmost):  x = 5.09%,  y = 14.70%
-         Bottle 2 (Mid-Left):  x = 16.71%, y = 9.29%
-         Bottle 3 (Mid-Right): x = 34.24%, y = 9.37%
-         Bottle 4 (Rightmost): x = 45.83%, y = 14.56%
+         Bottle 1 (Leftmost):  x = 10.56%, y = 14.70%
+         Bottle 2 (Mid-Left):  x = 22.18%, y = 9.29%
+         Bottle 3 (Mid-Right): x = 39.71%, y = 9.37%
+         Bottle 4 (Rightmost): x = 51.30%, y = 14.56%
          Back Horizontal Mirror (100% - x_front) for long-edge duplex flip:
-         Punch 4 (hits Bottle 4): x = 54.17%, y = 14.56%
-         Punch 3 (hits Bottle 3): x = 65.76%, y = 9.37%
-         Punch 2 (hits Bottle 2): x = 83.29%, y = 9.29%
-         Punch 1 (hits Bottle 1): x = 94.91%, y = 14.70%
+         Punch 4 (hits Bottle 4): x = 48.70%, y = 14.56%
+         Punch 3 (hits Bottle 3): x = 60.29%, y = 9.37%
+         Punch 2 (hits Bottle 2): x = 77.82%, y = 9.29%
+         Punch 1 (hits Bottle 1): x = 89.44%, y = 14.70%
       */
       --punch-size: 7.4mm;
       --navy: #0e1b2a;
@@ -298,10 +298,10 @@
     }
 
     /* Front Lime Exact Coordinates */
-    .front-lime-1 { left: 5.09%; top: 14.70%; }
-    .front-lime-2 { left: 16.71%; top: 9.29%; }
-    .front-lime-3 { left: 34.24%; top: 9.37%; }
-    .front-lime-4 { left: 45.83%; top: 14.56%; }
+    .front-lime-1 { left: 10.56%; top: 14.70%; }
+    .front-lime-2 { left: 22.18%; top: 9.29%; }
+    .front-lime-3 { left: 39.71%; top: 9.37%; }
+    .front-lime-4 { left: 51.30%; top: 14.56%; }
 
     /* =====================================================================
        PAGE 2: BACK CARD LAYOUT (Borderless + Larger Fonts + Mirrored Limes)
@@ -339,9 +339,9 @@
     /* Left Top: Coasters Tavern Branding & Card Entitlement */
     .back-header-left {
       position: absolute;
-      left: 1.8mm;
+      left: 1.5mm;
       top: 1.8mm;
-      width: 40mm;
+      width: 38mm;
       z-index: 3;
       display: flex;
       flex-direction: column;
@@ -351,12 +351,12 @@
     .back-brand-row {
       display: flex;
       align-items: center;
-      gap: 1.4mm;
+      gap: 1.2mm;
     }
 
     .back-logo {
-      width: 10.2mm;
-      height: 10.2mm;
+      width: 9.8mm;
+      height: 9.8mm;
       object-fit: contain;
       flex-shrink: 0;
       filter: drop-shadow(0 0.3mm 0.6mm rgba(0,0,0,0.25));
@@ -370,18 +370,18 @@
 
     .back-tavern-name {
       font-family: Georgia, 'Times New Roman', serif;
-      font-size: 10.4pt;
+      font-size: 9.4pt;
       font-weight: 900;
       color: var(--navy);
-      letter-spacing: -0.15px;
+      letter-spacing: -0.2px;
       white-space: nowrap;
     }
 
     .back-tavern-url {
-      font-size: 7.5pt;
+      font-size: 7.1pt;
       font-weight: 800;
       color: #24384d;
-      letter-spacing: 0.05px;
+      letter-spacing: 0px;
       white-space: nowrap;
     }
 
@@ -436,7 +436,7 @@
     /* Right Top: 4 Mirrored Hole-Punch Squares (Aligned to Front Bottle Limes) */
     .punch-zone-label {
       position: absolute;
-      left: 74.54%;
+      left: 69.06%;
       top: 10.6mm;
       transform: translateX(-50%);
       font-size: 5.8pt;
@@ -467,17 +467,17 @@
     }
 
     /* Mirrored X Coordinates (100% - Front_X) relative to full 90mm x 55mm card */
-    .punch-sq-4 { left: 54.17%; top: 14.56%; } /* Punches Front Bottle 4 (Inner-Right Lime) */
-    .punch-sq-3 { left: 65.76%; top: 9.37%; }  /* Punches Front Bottle 3 (Mid-Right Lime) */
-    .punch-sq-2 { left: 83.29%; top: 9.29%; }  /* Punches Front Bottle 2 (Mid-Left Lime) */
-    .punch-sq-1 { left: 94.91%; top: 14.70%; } /* Punches Front Bottle 1 (Outer-Left Lime) */
+    .punch-sq-4 { left: 48.70%; top: 14.56%; } /* Punches Front Bottle 4 (Inner-Right Lime) */
+    .punch-sq-3 { left: 60.29%; top: 9.37%; }  /* Punches Front Bottle 3 (Mid-Right Lime) */
+    .punch-sq-2 { left: 77.82%; top: 9.29%; }  /* Punches Front Bottle 2 (Mid-Left Lime) */
+    .punch-sq-1 { left: 89.44%; top: 14.70%; } /* Punches Front Bottle 1 (Outer-Left Lime) */
 
     /* If user toggles straight (non-mirrored) alignment for short-edge / manual flip check */
-    body.unmirrored-back .punch-sq-1 { left: 5.09%; top: 14.70%; }
-    body.unmirrored-back .punch-sq-2 { left: 16.71%; top: 9.29%; }
-    body.unmirrored-back .punch-sq-3 { left: 34.24%; top: 9.37%; }
-    body.unmirrored-back .punch-sq-4 { left: 45.83%; top: 14.56%; }
-    body.unmirrored-back .punch-zone-label { left: 25.46%; }
+    body.unmirrored-back .punch-sq-1 { left: 10.56%; top: 14.70%; }
+    body.unmirrored-back .punch-sq-2 { left: 22.18%; top: 9.29%; }
+    body.unmirrored-back .punch-sq-3 { left: 39.71%; top: 9.37%; }
+    body.unmirrored-back .punch-sq-4 { left: 51.30%; top: 14.56%; }
+    body.unmirrored-back .punch-zone-label { left: 30.94%; }
     body.unmirrored-back .back-header-left { left: auto; right: 3.0mm; text-align: right; }
     body.unmirrored-back .back-brand-row { flex-direction: row-reverse; }
     body.unmirrored-back .back-lime-ghost { transform: none; }
