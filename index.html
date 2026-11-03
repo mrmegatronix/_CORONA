@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coasters Tavern — Corona Punch Card (2-Sided No-Gap Print Sheet)</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 0;
+    }
+
+    :root {
+      --card-w: 88mm;
+      --card-h: 55mm;
+      --cols: 2;
+      --rows: 5;
+      /* Front Lime Center Coordinates (% of card width & height)
+         Bottle 1 (Leftmost):  x = 12.40%, y = 24.49%
+         Bottle 2 (Mid-Left):  x = 21.46%, y = 19.25%
+         Bottle 3 (Mid-Right): x = 32.46%, y = 19.48%
+         Bottle 4 (Rightmost): x = 41.63%, y = 24.65%
+         Back Horizontal Mirror (100% - x_front) for long-edge duplex flip:
+         Punch 4 (hits Bottle 1): x = 58.37%, y = 24.65%
+         Punch 3 (hits Bottle 2): x = 67.54%, y = 19.48%
+         Punch 2 (hits Bottle 3): x = 78.54%, y = 19.25%
+         Punch 1 (hits Bottle 4): x = 87.60%, y = 24.49%
+      */
+      --punch-size: 6.8mm;
+      --navy: #0e1b2a;
+      --cream-bg: #f6eedc;
+      --cream-inner: #fbf6ea;
+      --gold: #d4af37;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #0d131a;
+      color: #f0f4f8;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+    }
+
+    /* Top Control Bar (Hidden when printing) */
+    .no-print-bar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      width: 100%;
+      background: rgba(14, 27, 42, 0.96);
+      border-bottom: 2px solid var(--gold);
+      backdrop-filter: blur(10px);
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.65);
+    }
+
+    .bar-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: nowrap;
+    }
+
+    .brand-title {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      color: var(--gold);
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .btn-ctrl {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid rgba(212, 175, 55, 0.55);
+      background: #172a40;
+      color: #f6eedc;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: all 0.18s ease;
+    }
+
+    .btn-ctrl:hover {
+      background: #233f5e;
+      border-color: var(--gold);
+    }
+
+    .btn-ctrl.active {
+      background: rgba(212, 175, 55, 0.22);
+      border-color: var(--gold);
+      color: #ffd95a;
+      box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+    }
+
+    .btn-print {
+      background: var(--gold);
+      color: #0e1b2a;
+      border-color: #ffe074;
+    }
+
+    .btn-print:hover {
+      background: #ffe074;
+      color: #0e1b2a;
+    }
+
+    .clock-pill {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 14px;
+      font-weight: 800;
+      color: #ffd95a;
+      background: #09111a;
+      border: 1px solid rgba(212, 175, 55, 0.45);
+      border-radius: 6px;
+      padding: 6px 12px;
+      white-space: nowrap;
+    }
+
+    @keyframes blinkColon {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+
+    .blink-colon {
+      animation: blinkColon 1s infinite;
+    }
+
+    /* Workspace Container */
+    .sheets-workspace {
+      padding: 28px 20px 60px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 36px;
+      width: 100%;
+    }
+
+    .sheet-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sheet-caption {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #ffd95a;
+      background: rgba(14, 27, 42, 0.85);
+      border: 1px solid rgba(212, 175, 55, 0.4);
+      padding: 5px 16px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    /* A4 Sheet (210mm x 297mm) with centered 2x5 No-Gap Business Card Grid (176mm x 275mm) */
+    .a4-sheet {
+      width: 210mm;
+      height: 297mm;
+      min-width: 210mm;
+      min-height: 297mm;
+      background: #ffffff;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 14px 44px rgba(0, 0, 0, 0.75);
+      overflow: hidden;
+      page-break-after: always;
+      break-after: page;
+    }
+
+    .a4-sheet:last-of-type {
+      page-break-after: auto;
+      break-after: auto;
+    }
+
+    /* Outer Sheet Trim Ticks (Outside the 176mm x 275mm block so zero gaps between cards) */
+    .trim-ticks {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 20;
+    }
+
+    .tick {
+      position: absolute;
+      background: #333333;
+    }
+
+    /* Vertical cut lines at x = 17mm, 105mm (center shared cut), 193mm */
+    .tick-v {
+      width: 0.25mm;
+      height: 6mm;
+    }
+    .tick-v.top { top: 3mm; }
+    .tick-v.bot { bottom: 3mm; }
+    .tick-v.x0 { left: 17mm; }
+    .tick-v.x1 { left: 105mm; }
+    .tick-v.x2 { left: 193mm; }
+
+    /* Horizontal cut lines at y = 11mm, 66mm, 121mm, 176mm, 231mm, 286mm */
+    .tick-h {
+      height: 0.25mm;
+      width: 6mm;
+    }
+    .tick-h.left { left: 8mm; }
+    .tick-h.right { right: 8mm; }
+    .tick-h.y0 { top: 11mm; }
+    .tick-h.y1 { top: 66mm; }
+    .tick-h.y2 { top: 121mm; }
+    .tick-h.y3 { top: 176mm; }
+    .tick-h.y4 { top: 231mm; }
+    .tick-h.y5 { top: 286mm; }
+
+    /* 2x5 Zero-Gap Grid (176mm x 275mm exactly centered on 210mm x 297mm A4) */
+    .card-grid {
+      width: calc(var(--card-w) * var(--cols));
+      height: calc(var(--card-h) * var(--rows));
+      display: grid;
+      grid-template-columns: repeat(2, var(--card-w));
+      grid-template-rows: repeat(5, var(--card-h));
+      gap: 0;
+      margin: 0;
+      padding: 0;
+      position: relative;
+      z-index: 5;
+    }
+
+    .biz-card {
+      width: var(--card-w);
+      height: var(--card-h);
+      position: relative;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Hairline shared cut guide on front/back cards */
+    .biz-card-front {
+      outline: 0.15mm solid rgba(255, 255, 255, 0.22);
+      background: #100619;
+    }
+
+    .biz-card-front img.front-art {
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      display: block;
+    }
+
+    /* Optional X-Ray Overlay on Front Card to verify lime alignment */
+    .front-lime-xray {
+      position: absolute;
+      width: var(--punch-size);
+      height: var(--punch-size);
+      transform: translate(-50%, -50%);
+      border: 0.5mm dashed #00ffcc;
+      background: rgba(0, 255, 204, 0.18);
+      border-radius: 1.3mm;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 7pt;
+      font-weight: 900;
+      color: #ffffff;
+      text-shadow: 0 1px 2px #000;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    body.show-xray .front-lime-xray,
+    body.show-xray .back-lime-ghost {
+      display: flex;
+    }
+
+    /* Front Lime Exact Coordinates */
+    .front-lime-1 { left: 12.40%; top: 24.49%; }
+    .front-lime-2 { left: 21.46%; top: 19.25%; }
+    .front-lime-3 { left: 32.46%; top: 19.48%; }
+    .front-lime-4 { left: 41.63%; top: 24.65%; }
+
+    /* =====================================================================
+       PAGE 2: BACK CARD LAYOUT (Mirrored Lime Punch Squares + Draft T&Cs)
+       ===================================================================== */
+    .biz-card-back {
+      background: var(--cream-bg);
+      color: var(--navy);
+      padding: 1.6mm;
+      border: 0.15mm solid rgba(14, 27, 42, 0.28);
+    }
+
+    .back-frame {
+      width: 100%;
+      height: 100%;
+      border: 0.65mm solid var(--navy);
+      background: linear-gradient(180deg, #f3ecda 0%, #fbf6ea 45%, #f4ebd8 100%);
+      position: relative;
+       overflow: hidden;
+    }
+
+    /* Ghost front artwork flipped horizontally for X-ray verification on Back */
+    .back-lime-ghost {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: fill;
+      transform: scaleX(-1);
+      opacity: 0.35;
+      pointer-events: none;
+      display: none;
+      z-index: 1;
+    }
+
+    /* Left Top: Coasters Tavern Branding & Card Entitlement */
+    .back-header-left {
+      position: absolute;
+      left: 2.8mm;
+      top: 2.2mm;
+      width: 44.5mm;
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      gap: 1.1mm;
+    }
+
+    .back-brand-row {
+      display: flex;
+      align-items: center;
+      gap: 2mm;
+    }
+
+    .back-logo {
+      width: 9.2mm;
+      height: 9.2mm;
+      object-fit: contain;
+      flex-shrink: 0;
+      filter: drop-shadow(0 0.3mm 0.6mm rgba(0,0,0,0.25));
+    }
+
+    .back-brand-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.05;
+    }
+
+    .back-tavern-name {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 9.6pt;
+      font-weight: 800;
+      color: var(--navy);
+      letter-spacing: 0.15px;
+      white-space: nowrap;
+    }
+
+    .back-tavern-url {
+      font-size: 6.2pt;
+      font-weight: 700;
+      color: #24384d;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+    }
+
+    /* Right Top: 4 Mirrored Hole-Punch Squares (Aligned to Front Bottle Limes) */
+    .punch-zone-label {
+      position: absolute;
+      left: 72.98%;
+      top: 2.35mm;
+      transform: translateX(-50%);
+      font-size: 4.5pt;
+      font-weight: 800;
+      letter-spacing: 0.65px;
+      color: var(--navy);
+      text-transform: uppercase;
+      white-space: nowrap;
+      z-index: 3;
+    }
+
+    .punch-square {
+      position: absolute;
+      width: var(--punch-size);
+      height: var(--punch-size);
+      transform: translate(-50%, -50%);
+      background: #ffffff;
+      border: 0.65mm solid var(--navy);
+      border-radius: 1.25mm;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8.5pt;
+      font-weight: 800;
+      color: #8c9dad;
+      box-shadow: inset 0 0.2mm 0.6mm rgba(0, 0, 0, 0.08);
+      z-index: 4;
+    }
+
+    /* Mirrored X Coordinates (100% - Front_X) relative to full 88mm x 55mm card:
+       Since .back-frame is inset by 1.6mm + 0.65mm = 2.25mm on left/right (width = 83.5mm)
+       and 2.25mm on top/bottom (height = 50.5mm), we place the punch squares directly
+       inside .biz-card-back (the full 88mm x 55mm card coordinate space) so the percentages
+       are 100% mathematically identical to the front card! */
+    .punch-sq-4 { left: 58.37%; top: 24.65%; } /* Punches Front Bottle 4 (Inner-Right Lime) */
+    .punch-sq-3 { left: 67.54%; top: 19.48%; } /* Punches Front Bottle 3 (Mid-Right Lime) */
+    .punch-sq-2 { left: 78.54%; top: 19.25%; } /* Punches Front Bottle 2 (Mid-Left Lime) */
+    .punch-sq-1 { left: 87.60%; top: 24.49%; } /* Punches Front Bottle 1 (Outer-Left Lime) */
+
+    /* If user toggles straight (non-mirrored) alignment for short-edge / manual flip check */
+    body.unmirrored-back .punch-sq-1 { left: 12.40%; top: 24.49%; }
+    body.unmirrored-back .punch-sq-2 { left: 21.46%; top: 19.25%; }
+    body.unmirrored-back .punch-sq-3 { left: 32.46%; top: 19.48%; }
+    body.unmirrored-back .punch-sq-4 { left: 41.63%; top: 24.65%; }
+    body.unmirrored-back .punch-zone-label { left: 27.02%; }
+    body.unmirrored-back .back-header-left { left: auto; right: 2.8mm; text-align: right; }
+    body.unmirrored-back .back-brand-row { flex-direction: row-reverse; }
+    body.unmirrored-back .back-lime-ghost { transform: none; }
+
+    /* Middle Section: Title + Entitlement Sentence */
+    .back-mid-content {
+      position: absolute;
+      left: 2.6mm;
+      right: 2.6mm;
+      top: 19.2mm;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.9mm;
+      z-index: 3;
+    }
+
+    .back-card-title {
+      font-size: 9.8pt;
+      font-weight: 900;
+      letter-spacing: 0.45px;
+      color: var(--navy);
+      text-transform: uppercase;
+      white-space: nowrap;
+      line-height: 1.1;
+    }
+
+    .back-entitlement {
+      font-size: 6.7pt;
+      font-weight: 700;
+      color: var(--navy);
+      line-height: 1.22;
+      max-width: 78mm;
+    }
+
+    .back-punch-hint {
+      font-size: 5.1pt;
+      font-weight: 800;
+      letter-spacing: 0.6px;
+      color: #2c445e;
+      text-transform: uppercase;
+      white-space: nowrap;
+      margin-top: 0.2mm;
+    }
+
+    /* Bottom Section: Exact Terms & Conditions from Draft Back File */
+    .back-footer-terms {
+      position: absolute;
+      left: 2.6mm;
+      right: 2.6mm;
+      bottom: 2.0mm;
+      border-top: 0.25mm solid #506173;
+      padding-top: 1.2mm;
+      text-align: center;
+      font-size: 4.95pt;
+      line-height: 1.28;
+      color: #182636;
+      z-index: 3;
+    }
+
+    .back-footer-terms strong {
+      font-weight: 800;
+      color: var(--navy);
+    }
+
+    @media print {
+      body {
+        background: #ffffff !important;
+      }
+      .no-print-bar,
+      .sheet-caption {
+        display: none !important;
+      }
+      .sheets-workspace {
+        padding: 0 !important;
+        gap: 0 !important;
+      }
+      .sheet-wrapper {
+        gap: 0 !important;
+      }
+      .a4-sheet {
+        box-shadow: none !important;
+        margin: 0 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="no-print-bar">
+    <div class="bar-group">
+      <span class="brand-title">🍺 Corona Keep My Bucket Chilled — 2-Sided Sheet (10 Cards / No Gaps)</span>
+    </div>
+
+    <div class="bar-group">
+      <button type="button" class="btn-ctrl btn-print" onclick="window.print()">🖨️ Print 2-Sided Sheet (Ctrl+P)</button>
+      <button type="button" id="xray-btn" class="btn-ctrl" onclick="toggleXray()">🎯 Verify Lime Punch Alignment (X)</button>
+      <a href="Corona_Punch_Card_2Sided_A4.pdf" download class="btn-ctrl">📄 Download Print-Ready PDF</a>
+    </div>
+
+    <div class="bar-group">
+      <div class="clock-pill">
+        <span id="live-clock">--<span class="blink-colon">:</span>--<span class="blink-colon">:</span>--</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="sheets-workspace">
+
+    <!-- =================================================================
+         PAGE 1: FRONT SHEET (10x Cards, 2x5 Grid, 0mm Gap)
+         ================================================================= -->
+    <section class="sheet-wrapper" id="page-1-wrapper">
+      <div class="sheet-caption">Page 1 — Front Side (2 × 5 Business Cards • 88mm × 55mm • Zero Gaps to Minimise Cutting)</div>
+      <article class="a4-sheet" id="sheet-front">
+        <div class="trim-ticks">
+          <div class="tick tick-v top x0"></div>
+          <div class="tick tick-v top x1"></div>
+          <div class="tick tick-v top x2"></div>
+          <div class="tick tick-v bot x0"></div>
+          <div class="tick tick-v bot x1"></div>
+          <div class="tick tick-v bot x2"></div>
+
+          <div class="tick tick-h left y0"></div>
+          <div class="tick tick-h left y1"></div>
+          <div class="tick tick-h left y2"></div>
+          <div class="tick tick-h left y3"></div>
+          <div class="tick tick-h left y4"></div>
+          <div class="tick tick-h left y5"></div>
+          <div class="tick tick-h right y0"></div>
+          <div class="tick tick-h right y1"></div>
+          <div class="tick tick-h right y2"></div>
+          <div class="tick tick-h right y3"></div>
+          <div class="tick tick-h right y4"></div>
+          <div class="tick tick-h right y5"></div>
+        </div>
+
+        <div class="card-grid" id="front-grid"></div>
+      </article>
+    </section>
+
+    <!-- =================================================================
+         PAGE 2: BACK SHEET (10x Cards, 2x5 Grid, 0mm Gap, Lime-Aligned Punch Squares)
+         ================================================================= -->
+    <section class="sheet-wrapper" id="page-2-wrapper">
+      <div class="sheet-caption">Page 2 — Back Side (Duplex Long-Edge Flip • 4 Punch Squares Aligned With Front Bottle Limes)</div>
+      <article class="a4-sheet" id="sheet-back">
+        <div class="trim-ticks">
+          <div class="tick tick-v top x0"></div>
+          <div class="tick tick-v top x1"></div>
+          <div class="tick tick-v top x2"></div>
+          <div class="tick tick-v bot x0"></div>
+          <div class="tick tick-v bot x1"></div>
+          <div class="tick tick-v bot x2"></div>
+
+          <div class="tick tick-h left y0"></div>
+          <div class="tick tick-h left y1"></div>
+          <div class="tick tick-h left y2"></div>
+          <div class="tick tick-h left y3"></div>
+          <div class="tick tick-h left y4"></div>
+          <div class="tick tick-h left y5"></div>
+          <div class="tick tick-h right y0"></div>
+          <div class="tick tick-h right y1"></div>
+          <div class="tick tick-h right y2"></div>
+          <div class="tick tick-h right y3"></div>
+          <div class="tick tick-h right y4"></div>
+          <div class="tick tick-h right y5"></div>
+        </div>
+
+        <div class="card-grid" id="back-grid"></div>
+      </article>
+    </section>
+
+  </main>
+
+  <script>
+    (function () {
+      'use strict';
+
+      var CARD_COUNT = 10;
+      var frontGrid = document.getElementById('front-grid');
+      var backGrid = document.getElementById('back-grid');
+
+      var frontCardHTML =
+        '<div class="biz-card biz-card-front">' +
+          '<img src="card_front.png" alt="Corona Keep My Bucket Chilled Front" class="front-art">' +
+          '<div class="front-lime-xray front-lime-1">1</div>' +
+          '<div class="front-lime-xray front-lime-2">2</div>' +
+          '<div class="front-lime-xray front-lime-3">3</div>' +
+          '<div class="front-lime-xray front-lime-4">4</div>' +
+        '</div>';
+
+      var backCardHTML =
+        '<div class="biz-card biz-card-back">' +
+          '<div class="back-frame">' +
+            '<img src="card_front.png" alt="" class="back-lime-ghost">' +
+            '<div class="back-header-left">' +
+              '<div class="back-brand-row">' +
+                '<img src="coasters-logo.png" alt="Coasters Tavern" class="back-logo">' +
+                '<div class="back-brand-text">' +
+                  '<span class="back-tavern-name">Coasters Tavern</span>' +
+                  '<span class="back-tavern-url">coasterstavern.co.nz</span>' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+            '<div class="back-mid-content">' +
+              '<div class="back-card-title">KEEP MY BUCKET CHILLED CARD</div>' +
+              '<div class="back-entitlement">This card, after purchase, entitles the bearer to 4x 355ml bottles of Corona Extra.</div>' +
+              '<div class="back-punch-hint">STAMP OR PUNCH LIMES ABOVE ▲</div>' +
+            '</div>' +
+            '<div class="back-footer-terms">' +
+              '<strong>TERMS &amp; CONDITIONS:</strong> Valid only at Coasters Tavern (coasterstavern.co.nz). Subject to availability. Must be presented at the time of order. Not redeemable for cash or in conjunction with any other offer. This card is non-refundable. R18+ – Host responsibility policies apply. ID may be required. Enjoy Responsibly and Chill!' +
+            '</div>' +
+          '</div>' +
+          '<div class="punch-zone-label">STAMP OR PUNCH GRID</div>' +
+          '<div class="punch-square punch-sq-4">4</div>' +
+          '<div class="punch-square punch-sq-3">3</div>' +
+          '<div class="punch-square punch-sq-2">2</div>' +
+          '<div class="punch-square punch-sq-1">1</div>' +
+        '</div>';
+
+      var fOut = '';
+      var bOut = '';
+      for (var i = 0; i < CARD_COUNT; i++) {
+        fOut += frontCardHTML;
+        bOut += backCardHTML;
+      }
+      frontGrid.innerHTML = fOut;
+      backGrid.innerHTML = bOut;
+
+      function updateClock() {
+        var now = new Date();
+        var h = String(now.getHours()).padStart(2, '0');
+        var m = String(now.getMinutes()).padStart(2, '0');
+        var s = String(now.getSeconds()).padStart(2, '0');
+        var el = document.getElementById('live-clock');
+        if (el) {
+          el.innerHTML = h + '<span class="blink-colon">:</span>' + m + '<span class="blink-colon">:</span>' + s;
+        }
+      }
+      updateClock();
+      setInterval(updateClock, 1000);
+
+      window.toggleXray = function () {
+        document.body.classList.toggle('show-xray');
+        var btn = document.getElementById('xray-btn');
+        if (btn) {
+          btn.classList.toggle('active', document.body.classList.contains('show-xray'));
+        }
+      };
+
+      window.addEventListener('keydown', function (e) {
+        if (e.target.matches('input, textarea, select')) return;
+        if (e.key === 'x' || e.key === 'X') {
+          e.preventDefault();
+          window.toggleXray();
+        } else if (e.key === 'p' || e.key === 'P') {
+          e.preventDefault();
+          window.print();
+        } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+          e.preventDefault();
+          document.getElementById('page-2-wrapper').scrollIntoView({ behavior: 'smooth' });
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+          e.preventDefault();
+          document.getElementById('page-1-wrapper').scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
